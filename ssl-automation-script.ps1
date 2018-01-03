@@ -76,7 +76,7 @@ try {
 
 #Disable potentially active redirects
 $redirectEnabled = (Get-WebConfiguration system.webServer/httpRedirect "IIS:\sites\$SiteName").enabled
-if(redirectEnabled -eq "True"){
+if($redirectEnabled -eq "True"){
   Set-WebConfiguration system.webServer/httpRedirect "IIS:\sites\$SiteName" -Value @{enabled="false"} -ErrorAction SilentlyContinue
 }
 
@@ -167,7 +167,7 @@ if($disableRewriteRule -eq 1){
     set-webconfigurationproperty $rwStorN -Name enabled -Value true -PSPath "IIS:\sites\$SiteName"
 }
 #Reenable redirects if these were active.
-if(redirectEnabled -eq "True"){
+if($redirectEnabled -eq "True"){
   Set-WebConfiguration system.webServer/httpRedirect "IIS:\sites\$SiteName" -Value @{enabled="true"} -ErrorAction SilentlyContinue
 }
 
