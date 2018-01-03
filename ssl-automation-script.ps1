@@ -67,7 +67,7 @@ if($scheduleRenewal -eq 1 -Or $scheduleRenewal -eq 2){
     $action = New-ScheduledTaskAction -Execute 'Powershell.exe' -Argument $arguments
     $trigger =  New-ScheduledTaskTrigger -Daily -DaysInterval $scheduleDays -At $scheduleTime
     Register-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -TaskName "IIS SSL Renewal for $dnsEntry" -Description "Renewal of SSL cert binding for Domain $dnsEntry on IIS site $SiteName" 
-    if($scheduleRenewal -eq 2){
+     if(("$env:username") -ne "SYSTEM" -And $scheduleRenewal -eq 2){
      Write-Host "Schedule created. Exiting."
      exit
     }
