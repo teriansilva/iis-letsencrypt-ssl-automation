@@ -1,0 +1,7 @@
+<rule name="http to https" enabled="true" patternSyntax="Wildcard" stopProcessing="false">
+      <match url="*" />
+                    <conditions>
+                        <add input="{HTTPS}" pattern="off" />
+                    </conditions>
+       <action type="Redirect" url="https://{HTTP_HOST}{REQUEST_URI}" />
+</rule>
