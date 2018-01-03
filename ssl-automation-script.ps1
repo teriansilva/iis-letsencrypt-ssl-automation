@@ -51,13 +51,30 @@ $httpsRewriteRuleName = "http to https";
 $addTimestamp = 1;
 
 #do you want the certificate to automatically renew itself after n days? LE certificates last 90 days as of today.
-#Set 0 if no required.
+#Set 0 if no required. Set 1 if required, set 2 if only schedule renewal but not run it now.
 $scheduleRenewal = 1;
 $scheduleDays = 89;
-$scheduleTime = "3am";
+$scheduleTime = "9am";
+
+#---------------------------------------------------------[Schedule Renewal]--------------------------------------------------------
+if($scheduleRenewal -eq 1 -Or $scheduleRenewal -eq 2){
+    $path = Get-Location
+    $scriptName = $MyInvocation.MyCommand.Name
+    $scriptPath = "$path\$scriptName"
+    Write-Host "Scheduling Renewal job for PS Script $scriptPath"
+    $principal = New-ScheduledTaskPrincipal -UserID "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+    $arguments = "-File '$scriptPath'"
+    $action = New-ScheduledTaskAction -Execute 'Powershell.exe' -Argument $arguments
+    $trigger =  New-ScheduledTaskTrigger -Daily -DaysInterval $scheduleDays -At $scheduleTime
+    Register-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -TaskName "IIS SSL Renewal for $dnsEntry" -Description "Renewal of SSL cert binding for Domain $dnsEntry on IIS site $SiteName" 
+    if($scheduleRenewal -eq 2){
+     Write-Host "Schedule created. Exiting."
+     exit
+    }
+}
 
 #---------------------------------------------------------[Setup]--------------------------------------------------------
-$scriptPath = $MyInvocation.ScriptName
+
 try {
     Import-Module ACMESharp
     Write-Host "Imported ACME Sharp..."
@@ -178,14 +195,4 @@ if($deleteCertificateFileOnCompletion -eq 1){
  Remove-Item $certPath
 }
 
-#---------------------------------------------------------[Schedule Renewal]--------------------------------------------------------
-if($scheduleRenewal -eq 1){
-    Write-Host "Scheduling Renewal job..."
-    $principal = New-ScheduledTaskPrincipal -UserID "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount -RunLevel Highest
-    $arguments = "-File '{0}'" -f $scriptPath
-    $action = New-ScheduledTaskAction -Execute 'Powershell.exe' -Argument $arguments
-    $trigger =  New-ScheduledTaskTrigger -Daily -DaysInterval $scheduleDays -At $scheduleTime
-    Register-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -TaskName "IIS SSL Renewal for $dnsEntry" -Description "Renewal of SSL cert binding for Domain $dnsEntry on IIS site $SiteName" 
-
-}
 Write-Host 'Completed.'
