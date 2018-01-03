@@ -14,9 +14,6 @@
   Author:         Marcus Braun
   Creation Date:  3 Jan 2018
   Purpose/Change: Initial script development
-  
-.EXAMPLE
-  <Example goes here. Repeat this attribute for more than one example>
 #>
 
 #---------------------------------------------------------[Properties]--------------------------------------------------------
