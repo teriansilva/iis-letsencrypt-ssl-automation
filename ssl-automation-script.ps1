@@ -5,6 +5,7 @@
 .DESCRIPTION
   Using ACMESharp, this scripts requests a certificate for a IIS site, creates an SSL Binding and imports/assigns the certificate.
   It is also capable of scheduling automated renewal jobs.
+  Important! Make sure your server is reachable through your domain name via http protocol on port 80! Otherwise it will fail of course.
 .INPUTS
   None (Provided in file)
 .OUTPUTS
@@ -55,7 +56,6 @@ $scheduleRenewal = 1;
 $scheduleDays = 89;
 $scheduleTime = "3am";
 
-
 #---------------------------------------------------------[Setup]--------------------------------------------------------
 $scriptPath = $MyInvocation.ScriptName
 try {
@@ -74,6 +74,11 @@ try {
     $acmeReg = New-ACMERegistration -Contacts mailto:$adminMail -AcceptTos;
 }
 
+#Disable potentially active redirects
+$redirectEnabled = (Get-WebConfiguration system.webServer/httpRedirect "IIS:\sites\$SiteName").enabled
+if(redirectEnabled -eq "True"){
+  Set-WebConfiguration system.webServer/httpRedirect "IIS:\sites\$SiteName" -Value @{enabled="false"} -ErrorAction SilentlyContinue
+}
 
 if($addTimestamp -eq 1){
   $ts =  (get-date -f MM_dd_yyyy_HH_mm_ss).ToString();
@@ -161,7 +166,10 @@ if($disableRewriteRule -eq 1){
     $rwStorN = '/system.webserver/rewrite/rules/rule[@name="{0}"]' -f $httpsRewriteRuleName
     set-webconfigurationproperty $rwStorN -Name enabled -Value true -PSPath "IIS:\sites\$SiteName"
 }
-Write-Host 'Completed.'
+#Reenable redirects if these were active.
+if(redirectEnabled -eq "True"){
+  Set-WebConfiguration system.webServer/httpRedirect "IIS:\sites\$SiteName" -Value @{enabled="true"} -ErrorAction SilentlyContinue
+}
 
 #---------------------------------------------------------[Cleaning Up]--------------------------------------------------------
 
@@ -180,3 +188,4 @@ if($scheduleRenewal -eq 1){
     Register-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -TaskName "IIS SSL Renewal for $dnsEntry" -Description "Renewal of SSL cert binding for Domain $dnsEntry on IIS site $SiteName" 
 
 }
+Write-Host 'Completed.'
