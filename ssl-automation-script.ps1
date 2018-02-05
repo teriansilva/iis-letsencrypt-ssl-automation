@@ -1,4 +1,4 @@
-#requires -version 2
+#requires -version 5
 <#
 .SYNOPSIS
   This script requests a LetsEntryt Certificate for the given DNS name and assigns it to the corresponding IIS site.
@@ -76,16 +76,14 @@ if($scheduleRenewal -eq 1 -Or $scheduleRenewal -eq 2){
 
 #---------------------------------------------------------[Setup]--------------------------------------------------------
 
-try {
-    Import-Module ACMESharp
-    Write-Host "Imported ACME Sharp..."
-} catch {
-    Write-Host "Installing ACME Sharp..."
+
+    Write-Host "Setting up ACME Sharp..."
     Install-Module ACMESharp
     Install-Module ACMESharp.Providers.IIS
     Import-Module ACMESharp
+    Initialize-ACMEVault
     Enable-ACMEExtensionModule ACMESharp.Providers.IIS
-}
+
 try {
     Get-Variable acmeReg -ErrorAction Stop
 } catch [System.Management.Automation.ItemNotFoundException] {
