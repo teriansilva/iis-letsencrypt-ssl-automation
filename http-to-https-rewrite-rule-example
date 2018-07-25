@@ -1,4 +1,4 @@
-<rule name="http to https" enabled="true" patternSyntax="Wildcard" stopProcessing="false">
+<rule name="Http to Https" enabled="true" patternSyntax="Wildcard" stopProcessing="false">
       <match url="*" />
                     <conditions>
                         <add input="{HTTPS}" pattern="off" />
