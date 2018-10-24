@@ -63,7 +63,7 @@ if($scheduleRenewal -eq 1 -Or $scheduleRenewal -eq 2){
     $scriptPath = "$path\$scriptName"
     Write-Host "Scheduling Renewal job for PS Script $scriptPath"
     $principal = New-ScheduledTaskPrincipal -UserID "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount -RunLevel Highest
-    $arguments = "-File '$scriptPath'"
+    $arguments = "-File `"$scriptPath`""
     $action = New-ScheduledTaskAction -Execute 'Powershell.exe' -Argument $arguments
     $trigger =  New-ScheduledTaskTrigger -Daily -DaysInterval $scheduleDays -At $scheduleTime
     Register-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -TaskName "IIS SSL Renewal for $dnsEntry" -Description "Renewal of SSL cert binding for Domain $dnsEntry on IIS site $SiteName" 
